@@ -3,7 +3,7 @@ all:
 
 parser:
 	alex Lexer.x -o Lexer.hs
-	happy Parser.y -o Parser.hs
+	happy Parser.y -o Parser.hs -i[info.txt]
 
 run:
 	./Main

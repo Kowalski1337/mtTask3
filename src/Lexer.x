@@ -4,7 +4,7 @@ module Lexer where
 
 %wrapper "basic"
 
-$digit = [0-9]
+$digit = 0-9
 $letter = [a-zA-Z_]
 
 tokens :-
@@ -16,7 +16,7 @@ tokens :-
   \-                         	 { \_ -> MinusT }
   \*                         	 { \_ -> MulT }
   \/                         	 { \_ -> DivT }
-  ^                             { \_ -> XorT}
+  \^                             { \_ -> XorT}
   \%                         	 { \_ -> EucDivT }
   \+=                          { \_ -> PlusEqT }
   \-=                          { \_ -> SubEqT }
@@ -52,7 +52,7 @@ tokens :-
   return                       { \_ -> ReturnT }
   \;                           { \_ -> SemiT }
   \,                           { \_ -> CommaT }
-  \#inlude                     { \_ -> IncludeT}
+  \#include                     { \_ -> IncludeT}
   =                            { \_ -> AsT }
   else                         { \_ -> ElseT }
   [$letter][$letter$digit]*    { \s -> Identifier s }
@@ -60,7 +60,7 @@ tokens :-
   \}                           { \_ -> RParT }
   :                            { \_ -> ColonT }
   \"                           { \_ -> QuotesT }
-  [1-9][$digit]*               { \s -> Number s }
+  0|[1-9][$digit]*               { \s -> Number s }
 
 {
 

@@ -15,6 +15,7 @@ import Lexer
 %token MINUS   { MinusT }
 %token PLUS    { PlusT }
 %token LEFTP   { LeftP }
+%token MUL { MulT }
 %token RIGHTP  { RightP }
 %token DIV     { DivT }
 %token EUCDIV     { EucDivT }
@@ -50,7 +51,7 @@ import Lexer
 %token IF     { IfT }
 %token WHILE     { WhileT }
 %token ELSE    { ElseT }
-%token RETURN     { RetunT }
+%token RETURN     { ReturnT }
 %token SEMI     { SemiT }
 %token COMMA     { CommaT }
 %token INCLUDE     { IncludeT }
@@ -65,11 +66,11 @@ import Lexer
 
 Code
   : Single              { Final $1 }
-  | Single Code         { Other S1 S2 }
+  | Single Code         { Other $1 $2 }
 
 Single
-  : Include             { Inc S1 }
-  | Function            { Func $1 }
+  : Include             { Inc $1 }
+  | Function            {Func $1}
   | Variable            { Var $1 }
 
 Include
@@ -78,7 +79,7 @@ Include
 
 Variable
   : Type Name SEMI              { Default $1 (WithOutAssig (SingleExpr (VarAtom $2))) }
-  | Type Name AS Assig SEMI { Default $1 (SimpleAssig As  $2 $4 ) }
+  | Type Name AS Assig SEMI              { Default $1 (SimpleAssig As $2 $4) }
 
 Type
   : IDEN { SimpleType $1 }
@@ -86,138 +87,164 @@ Type
 Name
   : IDEN { Name $1 }
 
-Function
-  : Type Name Args Block { Fun $1 $2 $3 $4 }
 
-Args
-  : LEFTP RIGHTP { Zero }
-  | LEFTP Type Name RIGHTP { One $2 $3 }
-  | LEFTP Type Name COMMA MoreArgs RIGHTP { More $2 $3 $4 }
+    Function
+      : Type Name Args Block { Fun $1 $2 $3 $4 }
 
-MoreArgs
-  : Type Name { One $1 $2 }
-  | Type Name COMMA MoreArgs { More $1 $2 $4 }
+    Args
+      : LEFTP RIGHTP { Zero }
+      | LEFTP Type Name RIGHTP { One $2 $3 }
+      | LEFTP Type Name COMMA MoreArgs RIGHTP { More $2 $3 $5  }
 
-Block
-  : LPAR Internal RPAR { Par $2 }
+    MoreArgs
+      : Type Name { One $1 $2 }
+      | Type Name COMMA MoreArgs { More $1 $2 $4 }
 
-Internal
-  : CodeLine { SinglePart $1 }
-  | CodeLine Internal { MultipleLines $1 $2 }
+    Block
+      : LPAR Internal RPAR { Par $2 }
+      | LPAR RPAR {EmptyBlock}
 
-CodeLine
-  : Assig    { Assignment $1 }
-  | For      { ForLoop $1 }
-  | While    { WhileLoop $1}
-  | If       { Conditional $1 }
-  | Variable { Inits $1 }
-  | Block    { Part $1 }
-  | Return   { $1 }
+    Internal
+      : CodeLine { SinglePart $1 }
+      | CodeLine Internal { MultipleLines $1 $2 }
 
-If
-  : IF LEFTP Expr RIGHTP Block  { StandartIf $3 $5 }
-  | IF LEFTP Expr RIGHTP Block ELSE Block { IfElse $3 $5 $7 }
+    CodeLine
+      : Term    { Assignment $1 }
+      | For      { ForLoop $1 }
+      | While    { WhileLoop $1}
+      | If       { Conditional $1 }
+      | Variable { Inits $1 }
+      | Block    { Part $1 }
+      | Return   { $1 }
 
-For
-  : FOR LEFTP Term SEMI Term SEMI Term RIGHTP Block { Iter $3 $5 $7 $9 }
-  | FOR LEFTP Name COLON Name RIGHTP Block { ForEach $3 $5 $7}
-  | FOR LEFTP Type Name COLON Name RIGHTP Block { ForEachType $3 $4 $6 $8 }
+    Return
+      : RETURN Term { Return $2 }
 
-While
-  : WHILE LEFTP Expr RIGHTP Block { StandartWhile $3 $5 }
+    If
+      : IF LEFTP Assig RIGHTP Block  { StandartIf $3 $5 }
+      | IF LEFTP Assig RIGHTP Block ELSE Block { IfElse $3 $5 $7 }
 
-Term
-  : SEMI { EmptyTerm }
-  | Assig SEMI { NotEmpty $1 }
+    For
+     : FOR LEFTP Type Term Term RIGHTP Block { IterType $3 $4 $5 EmptyTerm $7 }
+     | FOR LEFTP Type Term Term Assig RIGHTP Block { IterType $3 $4 $5 (NotEmpty $6) $8 }
+     | FOR LEFTP Term Term RIGHTP Block { Iter $3 $4 EmptyTerm $6 }
+     | FOR LEFTP Term Term Assig RIGHTP Block { Iter $3 $4 (NotEmpty $5) $7 }
+     | FOR LEFTP Name COLON Name RIGHTP Block { ForEach $3 $5 $7}
+     | FOR LEFTP Type Name COLON Name RIGHTP Block { ForEachType $3 $4 $6 $8 }
 
-Assig
-  : VarName AssigOp Assig { SimpleAssig $2 $1 $3 }
-  | Expr14  { WithOutAssig $1 }
+    While
+      : WHILE LEFTP Assig RIGHTP Block { StandartWhile $3 $5 }
 
-AssigOp
-  : PLUSEQ { PlusEq }
-  | SUBEQ { SubEq }
-  | MULEQ { MulEq }
-  | DIVEQ { DivEq }
-  | EUCDIVEQ { EucDivEq }
-  | LSHIFTEQ { LShiftEq }
-  | RSHIFTEQ { RShiftEq }
-  | OREQ { OrEq }
-  | ANDEQ { AndEq }
-  | XOREQ { XorEq }
-  | AS  { As }
+    Term
+      : SEMI { EmptyTerm }
+      | Assig SEMI { NotEmpty $1 }
 
-Expr14
-  : Expr13 OROR Expr14 { BinaryExpr Or $1 $3 }
-  | Expr13 {$1}
+      Assig
+        : Name AssigOp Assig { SimpleAssig $2 $1 $3 }
+        | Expr14  { WithOutAssig  $1 }
 
-Expr13
-  : Expr12 ANDAND Expr13 { BinaryExpr And $1 $3 }
-  | Expr12 {$1}
+      AssigOp
+        : PLUSEQ { PlusEq }
+        | SUBEQ { SubEq }
+        | MULEQ { MulEq }
+        | DIVEQ { DivEq }
+        | EUCDIVEQ { EucDivEq }
+        | LSHIFTEQ { LShiftEq }
+        | RSHIFTEQ { RShiftEq }
+        | OREQ { OrEq }
+        | ANDEQ { AndEq }
+        | XOREQ { XorEq }
+        | AS  { As }
 
-Expr12
-  : Expr11 OR  Expr12 { BinaryExpr BitOr $1 $3 }
-  | Expr11 {$1}
+      Expr14
+        : Expr13 OROR Expr14 { BinaryExpr Or $1 $3 }
+        | Expr13 {$1}
 
-Expr11
-  : Expr10 XOR  Expr11 { BinaryExpr BitXor $1 $3 }
-  | Expr10 {$1}
+      Expr13
+        : Expr12 ANDAND Expr13 { BinaryExpr And $1 $3 }
+        | Expr12 {$1}
 
-Expr10
-  : Expr9 And  Expr10 { BinaryExpr BitAnd $1 $3 }
-  | Expr9 {$1}
+      Expr12
+        : Expr11 OR  Expr12 { BinaryExpr BitOr $1 $3 }
+        | Expr11 {$1}
 
-Expr9
-  : Expr8 Op9  Expr9 { BinaryExpr $2 $1 $3 }
-  | Expr8 {$1}
+      Expr11
+        : Expr10 XOR  Expr11 { BinaryExpr BitXor $1 $3 }
+        | Expr10 {$1}
 
-Op9
-  : EQ {Eq}
-  |  NOTEQ {NotEq}
+      Expr10
+        : Expr9 AND  Expr10 { BinaryExpr BitAnd $1 $3 }
+        | Expr9 {$1}
 
-Expr8
-  : Expr7 Op8  Expr8 { BinaryExpr $2 $1 $3 }
-  | Expr7 {$1}
+      Expr9
+        : Expr8 Op9  Expr9 { BinaryExpr $2 $1 $3 }
+        | Expr8 {$1}
 
-Op8
-  : LT {Lt}
-  |  GT {Gt}
-  | LTE {Lte}
-  | GTE {Gte}
+      Op9
+        : EQ {Eq}
+        |  NOTEQ {NotEq}
 
-Expr7
-  : Expr6 Op7  Expr7 { BinaryExpr $2 $1 $3 }
-  | Expr6 {$1}
+      Expr8
+        : Expr7 Op8  Expr8 { BinaryExpr $2 $1 $3 }
+        | Expr7 {$1}
 
-Op7
-  : RSHIFT {RShift}
-  |  LSHIFT {LShift}
+      Op8
+        : LT {Lt}
+        |  GT {Gt}
+        | LTE {Lte}
+        | GTE {Gte}
 
-Expr6
-  : Expr5 Op6  Expr6 { BinaryExpr $2 $1 $3 }
-  | Expr5 {$1}
+      Expr7
+        : Expr6 Op7  Expr7 { BinaryExpr $2 $1 $3 }
+        | Expr6 {$1}
 
-Op6
-  : PLUS  {Add}
-  |  MINUS {Sub}
+      Op7
+        : RSHIFT {RShift}
+        |  LSHIFT {LShift}
 
-Expr5
-  : Expr4 Op5  Expr5 { BinaryExpr $2 $1 $3 }
-  | Expr4 {$1}
+      Expr6
+        : Expr5 Op6  Expr6 { BinaryExpr $2 $1 $3 }
+        | Expr5 {$1}
 
-Op5
-  : MUL  {Mul}
-  |  DIV {Div}
-  | EUCDIV {EucDiv}
+      Op6
+        : PLUS  {Add}
+        |  MINUS {Sub}
 
-Expr3
-  : Op6 Atom { UnarExpr $1 $2 }
-  | Expr3 {$1}
+      Expr5
+        : Expr3 Op5  Expr5 { BinaryExpr $2 $1 $3 }
+        | Expr3 {$1}
 
-Atom
-  : Name { $1 }
-  | Number
-  | LEFTP Assig RIGHTP  { ExprPar $2 }
+      Op5
+        : MUL  {Mul}
+        |  DIV {Div}
+        | EUCDIV {EucDiv}
+
+      Expr3
+        : PP Atom { UnaryExpr PPPref  (SingleExpr $2) }
+        | MM Atom { UnaryExpr MMPref  (SingleExpr $2) }
+        | PLUS Expr3 { UnaryExpr Pos $2 }
+        | MINUS Expr3 { UnaryExpr Neg $2 }
+        | NOT Expr3 { UnaryExpr Not $2 }
+        | INV Expr3 { UnaryExpr Inv $2 }
+        | Atom PP { UnaryExpr PPSuff (SingleExpr $1) }
+        | Atom MM { UnaryExpr MMSuff (SingleExpr $1) }
+        | AtomExt { SingleExpr $1 }
+
+      Atom
+        : Name { VarAtom $1 }
+        | LEFTP Name AssigOp Assig RIGHTP { ExprPar (SimpleAssig $3 $2 $4) }
+        | LEFTP Atom RIGHTP  { ExprPar (WithOutAssig (SingleExpr $2)) }
+
+      AtomExt
+        : Name { VarAtom $1 }
+        | TRUE { T }
+        | FALSE { F }
+        | NUMBER { VarAtom (Name $1) }
+        | LEFTP Assig RIGHTP {ExprPar $2 }
+
+
+
+
 {
 parseError = fail "Parse error"
 }
