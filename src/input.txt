@@ -32,7 +32,7 @@ int main() {
 
 
                            /=
-                            2 + (         b=3 ) -- );
+                            2 + (         b=3 ) -- ); for (int x : y){if (x) {return (2+3^4);} else {x<<=(z = 5}}
         }
 
     }
