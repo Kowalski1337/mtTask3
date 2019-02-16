@@ -141,6 +141,7 @@ instance Show BinaryOp where
   show LShift = "<<"
   show RShift = ">>"
   show EucDiv = "%"
+  show BitXor = "^"
 
 instance Show UnaryOp where
   show Neg = "-"
