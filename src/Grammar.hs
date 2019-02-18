@@ -1,47 +1,67 @@
  module Grammar where
 
 data Code = Final Single | Other Single Code
+  --deriving (Show)
 
 data Single = Inc Include | Func Function | Var Variable
+  --deriving (Show)
 
 data Include = Quotes String | Brackets String
+  --deriving (Show)
 
 data Variable = Default TypeName Assig
+  --deriving (Show)
 
 data TypeName = SimpleType String
+  --deriving (Show)
 
 data VarName = Name String
+  --deriving (Show)
 
 data Function = Fun TypeName VarName Arguments Block
+  --deriving (Show)
 
 data Arguments = Zero | One TypeName VarName | More TypeName VarName Arguments
+  --deriving (Show)
 
 data Block = Par Internal | EmptyBlock
+  --deriving (Show)
 
 data Internal = SinglePart CodeLine |  MultipleLines CodeLine Internal
+  --deriving (Show)
 
 data CodeLine = Assignment Term  | ForLoop For | WhileLoop While | Conditional If | Inits Variable | Part Block | Return Term
+  --deriving (Show)
 
 data If = StandartIf Assig Block | IfElse Assig Block Block
+  --deriving (Show)
 
 data For = IterType TypeName Term Term Term Block |Iter Term Term Term Block | ForEach VarName VarName Block | ForEachType TypeName VarName VarName Block
+  --deriving (Show)
 
 data While = StandartWhile Assig Block
+  --deriving (Show)
 
 data Term = NotEmpty Assig | EmptyTerm
+  --deriving (Show)
 
 data Expr = BinaryExpr BinaryOp Expr Expr | UnaryExpr UnaryOp Expr | SingleExpr Atom
+  --deriving (Show)
 
 data BinaryOp = Mul | Div | Add | Sub | BitAnd | BitOr | BitXor | LShift | RShift | EucDiv | And | Or | Eq | NotEq | Lt | Gt | Lte | Gte
+  --deriving (Show)
 
-data UnaryOp = Not | Neg | Pos | Inv | PPPref | MMPref | PPSuff | MMSuff
+data UnaryOp = Not | Neg | Pos | Inv
+--  deriving (Show)
 
 data Atom = VarAtom VarName | T | F  | ExprPar Assig
+  --deriving (Show)
 
 data Assig = SimpleAssig AssigOp VarName Assig | WithOutAssig Expr | Lol
+  --deriving (Show)
 
 data AssigOp =  PlusEq | SubEq | DivEq | MulEq | EucDivEq | LShiftEq | RShiftEq | OrEq | AndEq | XorEq | As
-
+  --deriving (Show)
 
 ----show
 instance Show Code where
@@ -99,9 +119,10 @@ showIf s (IfElse e b1 b2) = "if (" ++ (show e) ++ ") " ++ (showBlock s b1) ++ " 
 
 showFor :: String -> For -> String
 showFor s (IterType t0 t1 t2 t3 b) = "for (" ++ (show t0) ++ " " ++ (show t1) ++ "; " ++ (show t2) ++ "; " ++ (show t3) ++ ") " ++ (showBlock s b)
+showFor s (Iter EmptyTerm t2 t3 b) = "for ( ; " ++ (show t2) ++ "; " ++ (show t3) ++ ") " ++ (showBlock s b)
 showFor s (Iter t1 t2 t3 b) = "for (" ++ (show t1) ++ "; " ++ (show t2) ++ "; " ++ (show t3) ++ ") " ++ (showBlock s b)
 showFor s (ForEach v1 v2 b) = "for (" ++ (show v1) ++ " : " ++ (show v2) ++ ") " ++ (showBlock s b)
-showFor s (ForEachType t v1 v2 b) = "for (" ++ (show t)
+showFor s (ForEachType t v1 v2 b) = "for (" ++ (show t) ++ " " ++ (show v1 ) ++ " : " ++ (show v2) ++ ") " ++ (showBlock s b)
 
 showWhile :: String -> While -> String
 showWhile s (StandartWhile t b) = "while (" ++ (show t) ++ ") " ++ (showBlock s b)
@@ -112,8 +133,6 @@ instance Show Term where
 
 instance Show Expr where
   show (BinaryExpr op e1 e2) = (show e1) ++ " " ++ (show op) ++ " " ++ (show e2)
-  show (UnaryExpr PPSuff e) = (show e) ++ "++"
-  show (UnaryExpr MMSuff e) = (show e) ++ "--"
   show (UnaryExpr op e) = (show op) ++ (show e)
   show (SingleExpr e) = show e
 
@@ -148,10 +167,6 @@ instance Show UnaryOp where
   show Pos = "+"
   show Inv = "~"
   show Not = "!"
-  show PPPref = "++"
-  show PPSuff = "++"
-  show MMPref = "--"
-  show MMSuff = "--"
 
 
 instance Show Assig where

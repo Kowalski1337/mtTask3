@@ -28,8 +28,6 @@ tokens :-
   &=                           { \_ -> AndEqT }
   \|=                          { \_ -> OrEqT }
   ^=                           { \_ -> XorEqT }
-  \+\+                         { \_ -> PPT }
-  \-\-                         { \_ -> MMT }
   \~                           { \_ -> InvT }
   \|                           { \_ -> OrT }
   &                            { \_ -> AndT }

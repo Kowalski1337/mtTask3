@@ -1,38 +1,95 @@
+
 #include <iostream>
 
-int main() {
-    int a = 0;
-    int b = 2 + 3;
 
-    for (int i = 0; i < b; i++){
+
+
+
+
+
+#include "mylib"
+
+
+int
+
+
+
+
+
+
+
+ main(
+
+
+
+
+
+
+
+
+
+
+
+ ) {
+    int
+
+
+
+
+
+
+
+
+
+     a = 0
+
+
+
+     ;
+    int                 b     = 2 + 3;
+
+    for (int i
+
+
+    = 0; i
+
+     < b
+
+     ; i
+
+
+     += 1) {
         a += 2;
-        while (true){
-                          int z = (b+=4)
+
+        while
+
+         (
+
+
+         true
+
+         ) {
+            int z = (b = 3) + 1;
+
+
+
+            int sum = 0;
+            for
+
+            (int
+
+             x : y){
+
+
+              sum += (x /2);
+
+            }
+            while
 
 
 
 
-
-
-
-
-
-
-                          ++ + --
-
-
-
-
-
-
-
-
-
-                          (a
-
-
-                           /=
-                            2 + (         b=3 ) -- ); for (int x : y){if (x) {return (2+3^4);} else {x<<=(z = 5}}
+             (x){                                 return 2+3;}
         }
 
     }
@@ -40,18 +97,13 @@ int main() {
 }
 
 
+void tetEmptyForAndFalse(int test, double many, float args){for(;;){
 
 
-void foo(             int x            )                 {
-int a = 2*3%5+7*7&7&&8|0||8;
-int x = x^3;
 
 
 
 
-if (x){
-  return;
-}
 
 
 
@@ -64,112 +116,13 @@ if (x){
 
 
 
+        if (false) {}
 
+        if (true) {}else
 
-else
 
 
-
-
-
-
-
-
- {
-  x
-
-
-
-
-
-
-
-
-
-
-
-   +=
-
-
-
-
-
-
-
-
-    ++
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    (a
-
-
-
-
-
-
-
-
-
-
-
-    >>=
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  (3 != 4)
-
-
-
-
-
-
-
-  )
-
-
-
-
-
-
-
-
-
-
-
-  /
-
-
-
-
-
-
-
-  5
-  ;
-}
-}
+        {
+        return;
+        }
+}}

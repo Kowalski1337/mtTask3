@@ -29,8 +29,6 @@ import Lexer
 %token ANDEQ     { AndEqT }
 %token OREQ     { OrEqT }
 %token XOREQ     { XorEqT }
-%token PP     { PPT }
-%token MM     { MMT }
 %token INV     { InvT }
 %token OR     { OrT }
 %token AND     { AndT }
@@ -125,9 +123,9 @@ Name
       | IF LEFTP Assig RIGHTP Block ELSE Block { IfElse $3 $5 $7 }
 
     For
-     : FOR LEFTP Type Term Term RIGHTP Block { IterType $3 $4 $5 EmptyTerm $7 }
+     : FOR LEFTP Term Term RIGHTP Block { Iter $3 $4 EmptyTerm $6 }
+     | FOR LEFTP Type Term Term RIGHTP Block { IterType $3 $4 $5 EmptyTerm $7 }
      | FOR LEFTP Type Term Term Assig RIGHTP Block { IterType $3 $4 $5 (NotEmpty $6) $8 }
-     | FOR LEFTP Term Term RIGHTP Block { Iter $3 $4 EmptyTerm $6 }
      | FOR LEFTP Term Term Assig RIGHTP Block { Iter $3 $4 (NotEmpty $5) $7 }
      | FOR LEFTP Name COLON Name RIGHTP Block { ForEach $3 $5 $7}
      | FOR LEFTP Type Name COLON Name RIGHTP Block { ForEachType $3 $4 $6 $8 }
@@ -140,7 +138,7 @@ Name
       | Assig SEMI { NotEmpty $1 }
 
       Assig
-        : Name AssigOp Assig { SimpleAssig $2 $1 $3 }
+        : Name AssigOp Expr14 { SimpleAssig $2 $1 (WithOutAssig $3) }
         | Expr14  { WithOutAssig  $1 }
 
       AssigOp
@@ -220,30 +218,21 @@ Name
         | EUCDIV {EucDiv}
 
       Expr3
-        : PP Atom { UnaryExpr PPPref  (SingleExpr $2) }
-        | MM Atom { UnaryExpr MMPref  (SingleExpr $2) }
-        | PLUS Expr3 { UnaryExpr Pos $2 }
-        | MINUS Expr3 { UnaryExpr Neg $2 }
-        | NOT Expr3 { UnaryExpr Not $2 }
-        | INV Expr3 { UnaryExpr Inv $2 }
-        | Atom PP { UnaryExpr PPSuff (SingleExpr $1) }
-        | Atom MM { UnaryExpr MMSuff (SingleExpr $1) }
-        | AtomExt { SingleExpr $1 }
+        : UnOp Expr3 { UnaryExpr Pos $2 }
+        | Atom { SingleExpr $1 }
+
+      UnOp
+      : PLUS {Pos}
+      | MINUS {Neg}
+      | NOT {Not}
+      | INV {Inv}
 
       Atom
-        : Name { VarAtom $1 }
-        | LEFTP Name AssigOp Assig RIGHTP { ExprPar (SimpleAssig $3 $2 $4) }
-        | LEFTP Atom RIGHTP  { ExprPar (WithOutAssig (SingleExpr $2)) }
-
-      AtomExt
         : Name { VarAtom $1 }
         | TRUE { T }
         | FALSE { F }
         | NUMBER { VarAtom (Name $1) }
         | LEFTP Assig RIGHTP {ExprPar $2 }
-
-
-
 
 {
 parseError = fail "Parse error"
